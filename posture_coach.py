@@ -85,7 +85,7 @@ def generate_roast(is_posture=True, score=None):
 
     except Exception as e:
         print(f"[Warning] OpenAI API call failed: {e}")
-        # Return a random fallback roast instead of fixed default string
+
         return random.choice(roast_fallbacks)
 
 
@@ -111,7 +111,7 @@ def play_insult(is_posture=True):
         engine.runAndWait()
     except Exception as e:
         print(f"[Warning] Error generating insult: {e}")
-        # Instead of crashing, pick a random roast from the fallback list:
+
         fallback_insult = random.choice(roast_fallbacks)
         engine.say(fallback_insult)
         engine.runAndWait()
@@ -149,10 +149,10 @@ face_too_close = False
 last_distance_alert_time = 0
 distance_alert_cooldown = 0  # seconds
 
-# Performance tracking
+
 prev_time = 0
 
-# Alert timer settings
+
 last_alert_time = 0
 alert_cooldown = 0  # seconds
 
@@ -218,10 +218,10 @@ def calculate_face_distance_score(face_landmarks, image_shape):
         face_width = max(x_coordinates) - min(x_coordinates)
         face_height = max(y_coordinates) - min(y_coordinates)
         
-        # Use primarily the width for distance estimation
+
         face_width_ratio = face_width
         
-        # If face is too big (too close), score decreases
+
         if face_width_ratio < ideal_face_size_ratio: 
             distance_score = min(100, 100 * (face_width_ratio / ideal_face_size_ratio))
         else: 
@@ -260,15 +260,15 @@ def calculate_posture_score_front_view(landmarks):
         mid_ear = (le + re) / 2
         mid_hip = (lh + rh) / 2
 
-        # 1. Shoulder alignment (horizontal)
+
         shoulder_alignment = abs(ls[1] - rs[1])
         s_score = max(0, 100 - (shoulder_alignment * 500))
         
-        # 2. Vertical alignment (ear above shoulders)
+
         vertical_alignment = abs(mid_ear[0] - mid_shoulder[0])
         v_score = max(0, 100 - (vertical_alignment * 500))
         
-        # 3. Spine straightness (shoulders above hips)
+
         spine_straightness = abs(mid_shoulder[0] - mid_hip[0])
         sp_score = max(0, 100 - (spine_straightness * 500))
 
@@ -304,7 +304,7 @@ def calculate_posture_score_side_view(landmarks):
         use_left = (left_ear.visibility + left_shoulder.visibility + left_hip.visibility)/3 > \
                   (right_ear.visibility + right_shoulder.visibility + right_hip.visibility)/3
         
-        # Extract coordinates based on the most visible side
+
         if use_left:
             ear = np.array([left_ear.x, left_ear.y])
             shoulder = np.array([left_shoulder.x, left_shoulder.y])
@@ -318,15 +318,15 @@ def calculate_posture_score_side_view(landmarks):
             ankle = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x, 
                              landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y])
         
-        # 1. Ear-Shoulder Alignment (vertical alignment)
+
         ear_shoulder_alignment = abs(ear[0] - shoulder[0])
         ear_shoulder_score = max(0, 100 - (ear_shoulder_alignment * 500))
         
-        # 2. Shoulder-Hip Alignment (vertical alignment)
+
         shoulder_hip_alignment = abs(shoulder[0] - hip[0])
         shoulder_hip_score = max(0, 100 - (shoulder_hip_alignment * 500))
         
-        # 3. Overall vertical alignment (ear, shoulder, hip, ankle)
+
         ideal_x = (ear[0] + shoulder[0] + hip[0] + ankle[0]) / 4  # Average x position
         ear_deviation = abs(ear[0] - ideal_x)
         shoulder_deviation = abs(shoulder[0] - ideal_x)
@@ -338,7 +338,6 @@ def calculate_posture_score_side_view(landmarks):
         
         final_score = int(ear_shoulder_score * 0.4 + shoulder_hip_score * 0.3 + vertical_score * 0.3)
         
-        # Smoothing
         posture_history.append(final_score)
         if len(posture_history) > history_size:
             posture_history.pop(0)
@@ -452,13 +451,11 @@ def draw_posture_side_view(image, landmarks):
                     int(landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y * h))
             side_text = "Right Side View"
         
-        # Calculate ideal vertical line (average x position of all points)
+
         ideal_x = (ear[0] + shoulder[0] + hip[0] + ankle[0]) // 4
         
-        # Draw ideal vertical alignment line
         cv2.line(image, (ideal_x, 0), (ideal_x, h), (200, 200, 200), 1)
-        
-        # Draw additional vertical reference line specifically for ear-shoulder alignment
+
         ear_shoulder_line_x = (ear[0] + shoulder[0]) // 2
         cv2.line(image, (ear_shoulder_line_x, ear[1]), (ear_shoulder_line_x, shoulder[1]), 
                 (0, 255, 255), 2)  # Yellow for ear-shoulder reference
@@ -480,7 +477,6 @@ def draw_posture_side_view(image, landmarks):
         hip_dev = abs(hip[0] - ideal_x)
         ankle_dev = abs(ankle[0] - ideal_x)
         
-        # Display ear-shoulder alignment information
         ear_shoulder_alignment = abs(ear[0] - shoulder[0])
         alignment_text = "Ear-Shoulder Aligned" if ear_shoulder_alignment < 20 else "Align Ear with Shoulder"
         alignment_color = (0, 255, 0) if ear_shoulder_alignment < 20 else (0, 165, 255)
@@ -586,7 +582,7 @@ try:
         
         if current_alert_posture:
             if (current_time - last_alert_time) > alert_cooldown:
-                # Play alert sound (keep your thread for async sound if you want)
+
                 sound_thread = threading.Thread(target=play_alert)
                 sound_thread.daemon = True
                 sound_thread.start()
@@ -596,7 +592,7 @@ try:
 
                 print("💬 GPT Roast:", roast)
 
-                # Optionally, speak it out loud using your pyttsx3 engine (if you want)
+
                 speak_async(roast)
 
                 last_alert_time = current_time
