@@ -60,7 +60,7 @@ def generate_roast(is_posture=True, score=None):
     Generate a funny roast based on context.
     If OpenAI API fails or quota is exceeded, pick a random fallback roast.
     """
-    # Define fallback roasts list once outside this function (already done as roast_fallbacks)
+
 
     if is_posture:
         if score is not None:
